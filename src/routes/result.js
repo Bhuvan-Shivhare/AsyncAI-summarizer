@@ -1,5 +1,6 @@
 const express = require('express');
-const prisma = require('../lib/prisma');
+const { query } = require('../lib/pg');
+const redisClient = require('../lib/redis');
 
 const router = express.Router();
 
@@ -27,16 +28,13 @@ router.get('/:jobId', async (req, res) => {
     }
 
     // Fetch job from database
-    const job = await prisma.job.findUnique({
-      where: { id: jobId },
-      select: {
-        id: true,
-        status: true,
-        summary: true,
-        errorMessage: true,
-        updatedAt: true,
-      },
-    });
+    const sql = `
+      SELECT id, status, summary, "inputHash", "isCacheHit", "errorMessage", "createdAt", "updatedAt"
+      FROM jobs
+      WHERE id = $1
+    `;
+    const result = await query(sql, [jobId]);
+    const job = result.rows[0];
 
     // Check if job exists
     if (!job) {
@@ -54,12 +52,34 @@ router.get('/:jobId', async (req, res) => {
     }
 
     if (job.status === 'completed') {
+      // Get cache TTL from Redis if available
+      let cacheTTL = null;
+      try {
+        if (redisClient.isOpen) {
+          cacheTTL = await redisClient.ttl(job.inputHash);
+          // Redis TTL returns -2 if key not found, -1 if no expiry
+          if (cacheTTL < 0) cacheTTL = null;
+        }
+      } catch (err) {
+        console.warn('Could not fetch cache TTL:', err.message);
+      }
+
+      // Calculate processing time
+      const processingTimeMs = job.updatedAt.getTime() - job.createdAt.getTime();
+      const processingTimeSec = (processingTimeMs / 1000).toFixed(2);
+
       // Job completed successfully
       return res.status(200).json({
         jobId: job.id,
         status: 'completed',
         summary: job.summary,
         completedAt: job.updatedAt.toISOString(),
+        processingTime: `${processingTimeSec}s`,
+        isCacheHit: job.isCacheHit,
+        cacheInfo: {
+          expiresInMinutes: cacheTTL ? Math.round(cacheTTL / 60) : null,
+          remainingSeconds: cacheTTL
+        }
       });
     }
 
@@ -84,4 +104,3 @@ router.get('/:jobId', async (req, res) => {
 });
 
 module.exports = router;
-

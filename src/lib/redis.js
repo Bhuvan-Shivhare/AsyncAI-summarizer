@@ -1,7 +1,8 @@
 const { createClient } = require('redis');
 
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
+  url: redisUrl,
 });
 
 let isConnected = false;
@@ -11,38 +12,21 @@ redisClient.on('error', (err) => {
   isConnected = false;
 });
 
-redisClient.on('connect', () => {
-  console.log('[Redis] Connecting...');
-});
-
 redisClient.on('ready', () => {
   console.log('Redis connected');
   isConnected = true;
 });
 
-redisClient.on('end', () => {
-  console.log('[Redis] Connection ended');
-  isConnected = false;
-});
-
-// Lazy connection - connect when first used
+// Lazy connection helper
 async function ensureConnected() {
-  if (!isConnected && !redisClient.isOpen) {
-    try {
-      await redisClient.connect();
-    } catch (error) {
-      console.error('[Redis] Failed to connect:', error.message);
-      isConnected = false;
-    }
+  if (!redisClient.isOpen) {
+    await redisClient.connect();
   }
-  return isConnected || redisClient.isOpen;
+  return redisClient.isOpen;
 }
 
-// Graceful shutdown
-process.on('beforeExit', async () => {
-  if (redisClient.isOpen) {
-    await redisClient.quit();
-  }
-});
+// Export client directly as requested by worker template
+module.exports = redisClient;
 
-module.exports = { redisClient, ensureConnected };
+// Also attach properties for those who need them
+module.exports.ensureConnected = ensureConnected;

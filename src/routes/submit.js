@@ -1,7 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
-const prisma = require('../lib/prisma');
-const queue = require('../lib/queue');
+const { query } = require('../lib/pg'); // Use pg client
+const { queue } = require('../lib/queue');
 
 const router = express.Router();
 
@@ -68,34 +68,31 @@ router.post('/', async (req, res) => {
     // Generate input hash for idempotency
     const inputHash = generateInputHash(input);
 
+    const id = crypto.randomUUID();
+    const originalUrl = inputType === 'url' ? input : null;
+    const originalText = inputType === 'text' ? input : null;
+
     // Create job record
-    const jobData = {
-      inputType,
-      inputHash,
-      status: 'queued',
-    };
+    // Note: We use quotes for "inputType" etc because Prisma likely created them preserving case
+    const sql = `
+      INSERT INTO jobs (id, "inputType", "inputHash", status, "originalUrl", "originalText", "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+      RETURNING id, status
+    `;
 
-    // Set the appropriate input field based on type
-    if (inputType === 'url') {
-      jobData.originalUrl = input;
-    } else {
-      jobData.originalText = input;
-    }
-
-    const job = await prisma.job.create({
-      data: jobData,
-    });
+    const result = await query(sql, [id, inputType, inputHash, 'queued', originalUrl, originalText]);
+    const job = result.rows[0];
 
     // Add job to BullMQ queue for processing
     try {
       await queue.add('process-summary', {
         jobId: job.id,
       });
-      console.log(`[API] Job ${job.id} added to queue`);
+      console.log(`[API] Job ${job.id} added to queue: ${queue.name}`);
     } catch (error) {
       // Log error but don't fail the request
       // Job is already in DB, worker can pick it up later
-      console.error('[API] Failed to add job to queue:', error.message);
+      console.error(`[API] Failed to add job ${job.id} to queue:`, error.message);
     }
 
     // Return job ID and status

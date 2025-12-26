@@ -1,5 +1,5 @@
 const express = require('express');
-const prisma = require('../lib/prisma');
+const { query } = require('../lib/pg');
 
 const router = express.Router();
 
@@ -26,15 +26,13 @@ router.get('/:jobId', async (req, res) => {
     }
 
     // Fetch job from database
-    const job = await prisma.job.findUnique({
-      where: { id: jobId },
-      select: {
-        id: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const sql = `
+      SELECT id, status, "isCacheHit", "createdAt", "updatedAt"
+      FROM jobs
+      WHERE id = $1
+    `;
+    const result = await query(sql, [jobId]);
+    const job = result.rows[0];
 
     // Check if job exists
     if (!job) {
@@ -45,6 +43,7 @@ router.get('/:jobId', async (req, res) => {
     res.status(200).json({
       jobId: job.id,
       status: job.status,
+      isCacheHit: job.isCacheHit,
       createdAt: job.createdAt.toISOString(),
       updatedAt: job.updatedAt.toISOString(),
     });
