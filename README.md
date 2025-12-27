@@ -2,6 +2,11 @@
 
 A production-grade, asynchronous backend service that summarizes text or URL-based content using Google Gemini LLM with queue-based processing, Redis caching, and intelligent cost optimization.
 
+## 📌 Live Demo
+
+ [Live Demo Link](https://drive.google.com/file/d/1tZ54RycqEa1SRMEnNoB3LaBb-x05BWml/view?usp=sharing)
+
+ Click above to view the demo!
 ## 📌 Overview
 
 This project demonstrates a **senior-level backend architecture** for handling slow, expensive AI operations asynchronously. Instead of blocking API requests for 2-10 seconds while waiting for LLM responses, the system:
