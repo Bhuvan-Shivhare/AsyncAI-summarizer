@@ -87,9 +87,11 @@ export default function Home() {
       };
       setJobs(prev => [newJob, ...prev]);
       setSelectedJobId(res.jobId);
+
       setTimeout(() => {
         setJobs(prev => prev.map(j => j.id === res.jobId ? { ...j, step: 'queue' } : j));
       }, 800);
+
       const interval = setInterval(() => pollJobStatus(res.jobId), 2000);
       pollIntervals.current[res.jobId] = interval;
     } catch (error) {
@@ -117,16 +119,16 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-white text-zinc-900 selection:bg-blue-500/10 font-sans">
+    <main className="min-h-screen bg-white text-zinc-900 selection:bg-blue-500/10">
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-500/5 blur-[120px] rounded-full" />
         <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] bg-purple-500/5 blur-[120px] rounded-full" />
       </div>
 
-      <header className="border-b border-zinc-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-zinc-200 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/10">
+            <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/10">
               <BrainCircuit className="text-white" size={24} />
             </div>
             <div>
@@ -141,13 +143,13 @@ export default function Home() {
                 "w-2 h-2 rounded-full animate-pulse",
                 isOnline ? "bg-green-500" : "bg-red-500"
               )} />
-              <span className="text-xs text-zinc-500 font-bold">
+              <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider">
                 API: {isOnline ? "ONLINE" : "OFFLINE"}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Activity className="text-zinc-400" size={16} />
-              <span className="text-xs text-zinc-500 font-bold">0.8s AVG</span>
+              <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider">0.8s AVG</span>
             </div>
           </div>
         </div>
@@ -157,7 +159,7 @@ export default function Home() {
         <div className="col-span-12 lg:col-span-8 space-y-12">
           <section className="space-y-4">
             <div className="text-center space-y-2 mb-8">
-              <h2 className="text-3xl font-bold text-zinc-900">What would you like to summarize?</h2>
+              <h2 className="text-3xl font-extrabold text-zinc-900 tracking-tight">What would you like to summarize?</h2>
               <p className="text-zinc-500 max-w-md mx-auto font-medium">Submit content to see exactly how our asynchronous architecture processes it in the background.</p>
             </div>
             <InputSection onSubmit={handleSubmit} isLoading={isSubmitting} />
@@ -165,8 +167,8 @@ export default function Home() {
 
           <section className="space-y-4">
             <div className="flex items-center justify-between px-2">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">Live System Flow</h3>
-              <div className="flex items-center gap-2 text-[10px] text-zinc-400 font-bold uppercase">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400">Live System Flow</h3>
+              <div className="flex items-center gap-2 text-[10px] text-zinc-300 font-bold uppercase">
                 <span>Auto-Visualizing</span>
                 <span className="w-4 h-[1px] bg-zinc-200" />
               </div>
@@ -188,12 +190,12 @@ export default function Home() {
 
           <section className="sticky top-[100px]">
             <ExplanationPanel activeJob={selectedJob} />
-            <div className="mt-6 p-4 rounded-2xl bg-blue-50/50 border border-blue-100 shadow-sm">
-              <div className="flex items-center gap-2 text-blue-600 mb-2 font-bold">
-                <LayoutDashboard size={16} />
-                <h4 className="text-xs uppercase tracking-wider">Architecture Note</h4>
+            <div className="mt-6 p-6 rounded-2xl bg-blue-50/50 border border-blue-100 shadow-sm">
+              <div className="flex items-center gap-2 text-blue-600 mb-3">
+                <LayoutDashboard size={18} />
+                <h4 className="text-xs uppercase tracking-widest font-extrabold">Architecture Note</h4>
               </div>
-              <p className="text-[11px] text-blue-700/70 leading-relaxed font-medium">
+              <p className="text-[11px] text-zinc-500 leading-relaxed font-medium">
                 This UI uses polling to simulate a real-time reactive interface. In a production environment, we might use WebSockets or Server-Sent Events (SSE) for even faster updates.
               </p>
             </div>

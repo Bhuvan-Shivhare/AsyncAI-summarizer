@@ -4,41 +4,27 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, XCircle, Server, Send } from "lucide-react";
 
-// Define the base URL for the backend API
-// Ensure your backend is running on this port (default is 3000)
-// If frontend is also on 3000, run frontend on 3001: npm run dev -- -p 3001
 const API_BASE_URL = "http://localhost:3000";
 
 export default function AsyncDemoPage() {
-    // State for Health Check
     const [healthStatus, setHealthStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [healthData, setHealthData] = useState<any>(null);
 
-    // State for Job Submission
     const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [submitData, setSubmitData] = useState<any>(null);
     const [inputText, setInputText] = useState("Explain async/await in JavaScript");
 
-    // 1. Example of a simple GET request
     const checkHealth = async () => {
-        setHealthStatus("loading"); // Start loading state
+        setHealthStatus("loading");
         setHealthData(null);
 
         try {
-            // API Call using fetch
-            // We use 'await' to pause execution until the promise resolves
             const response = await fetch(`${API_BASE_URL}/health`);
-
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-
-            // We also await the JSON parsing
             const data = await response.json();
-
-            // Simulate a small delay simply to let you see the loading spinner
             await new Promise(resolve => setTimeout(resolve, 600));
-
             setHealthData(data);
             setHealthStatus("success");
         } catch (error: any) {
@@ -48,7 +34,6 @@ export default function AsyncDemoPage() {
         }
     };
 
-    // 2. Example of a POST request with payload
     const submitJob = async () => {
         if (!inputText.trim()) return;
 
@@ -56,20 +41,17 @@ export default function AsyncDemoPage() {
         setSubmitData(null);
 
         try {
-            // API Call
             const response = await fetch(`${API_BASE_URL}/submit`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                // We only send 'text' because the backend validation requires EITHER text OR url, not both.
                 body: JSON.stringify({
                     text: inputText,
                 }),
             });
 
             if (!response.ok) {
-                // Attempt to parse error message from server
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
@@ -85,7 +67,7 @@ export default function AsyncDemoPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-8 font-sans selection:bg-purple-500/30">
+        <div className="min-h-screen bg-white text-zinc-900 p-8 font-sans selection:bg-blue-500/10">
             <div className="max-w-4xl mx-auto space-y-12">
 
                 {/* Header */}
@@ -93,11 +75,11 @@ export default function AsyncDemoPage() {
                     <motion.h1
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent"
+                        className="text-5xl font-extrabold text-zinc-900"
                     >
                         Async/Await & Web APIs
                     </motion.h1>
-                    <p className="text-gray-400 text-lg max-w-2xl">
+                    <p className="text-zinc-500 text-lg max-w-2xl font-medium">
                         A demonstration of handling asynchronous operations, API integration, and state management in a modern React application.
                     </p>
                 </header>
@@ -109,23 +91,23 @@ export default function AsyncDemoPage() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="border border-gray-800 bg-gray-900/50 rounded-2xl p-6 backdrop-blur-sm hover:border-blue-500/50 transition-colors"
+                        className="border border-zinc-200 bg-white rounded-3xl p-8 hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/5 transition-all shadow-sm group"
                     >
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-3 rounded-lg bg-blue-500/10 text-blue-400">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="p-3 rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
                                 <Server className="w-6 h-6" />
                             </div>
-                            <h2 className="text-2xl font-semibold">System Status</h2>
+                            <h2 className="text-2xl font-bold">System Status</h2>
                         </div>
 
-                        <p className="text-gray-400 mb-6 text-sm">
-                            Performs a simple <code className="text-blue-300">GET</code> request to verify backend connectivity.
+                        <p className="text-zinc-500 mb-6 text-sm font-medium leading-relaxed">
+                            Performs a simple <code className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">GET</code> request to verify backend connectivity.
                         </p>
 
                         <button
                             onClick={checkHealth}
                             disabled={healthStatus === "loading"}
-                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 disabled:cursor-not-allowed rounded-xl font-medium transition-all flex items-center justify-center gap-2 group"
+                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95"
                         >
                             {healthStatus === "loading" ? (
                                 <>
@@ -134,13 +116,12 @@ export default function AsyncDemoPage() {
                                 </>
                             ) : (
                                 <>
-                                    <Server className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                    <Server className="w-5 h-5" />
                                     Check Health
                                 </>
                             )}
                         </button>
 
-                        {/* Response Display */}
                         <div className="mt-6">
                             <ResponseDisplay status={healthStatus} data={healthData} />
                         </div>
@@ -152,23 +133,23 @@ export default function AsyncDemoPage() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="border border-gray-800 bg-gray-900/50 rounded-2xl p-6 backdrop-blur-sm hover:border-purple-500/50 transition-colors"
+                        className="border border-zinc-200 bg-white rounded-3xl p-8 hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/5 transition-all shadow-sm group"
                     >
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-3 rounded-lg bg-purple-500/10 text-purple-400">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="p-3 rounded-2xl bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
                                 <Send className="w-6 h-6" />
                             </div>
-                            <h2 className="text-2xl font-semibold">Submit Job</h2>
+                            <h2 className="text-2xl font-bold">Submit Job</h2>
                         </div>
 
-                        <p className="text-gray-400 mb-4 text-sm">
-                            Sends data via <code className="text-purple-300">POST</code> to process a request asynchronously.
+                        <p className="text-zinc-500 mb-4 text-sm font-medium leading-relaxed">
+                            Sends data via <code className="text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">POST</code> to process a request asynchronously.
                         </p>
 
                         <textarea
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
-                            className="w-full bg-black/50 border border-gray-700 rounded-xl p-4 text-sm text-gray-200 focus:outline-none focus:border-purple-500 transition-colors resize-none mb-4"
+                            className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-4 focus:ring-purple-500/5 focus:border-purple-500/30 transition-all resize-none mb-4 font-medium"
                             rows={3}
                             placeholder="Enter text to process..."
                         />
@@ -176,7 +157,7 @@ export default function AsyncDemoPage() {
                         <button
                             onClick={submitJob}
                             disabled={submitStatus === "loading" || !inputText.trim()}
-                            className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/50 disabled:cursor-not-allowed rounded-xl font-medium transition-all flex items-center justify-center gap-2 group"
+                            className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 active:scale-95"
                         >
                             {submitStatus === "loading" ? (
                                 <>
@@ -185,13 +166,12 @@ export default function AsyncDemoPage() {
                                 </>
                             ) : (
                                 <>
-                                    <Send className="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
+                                    <Send className="w-5 h-5" />
                                     Submit Job
                                 </>
                             )}
                         </button>
 
-                        {/* Response Display */}
                         <div className="mt-6">
                             <ResponseDisplay status={submitStatus} data={submitData} />
                         </div>
@@ -200,24 +180,24 @@ export default function AsyncDemoPage() {
                 </div>
 
                 {/* Educational Section */}
-                <section className="border-t border-gray-800 pt-8">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-300">Understanding the Code</h3>
-                    <div className="grid md:grid-cols-2 gap-8 text-sm text-gray-400">
-                        <div>
-                            <strong className="text-white block mb-2">The `async` keyword</strong>
-                            <p>Marks a function as asynchronous, meaning it returns a Promise. This allows us to use `await` inside it.</p>
+                <section className="border-t border-zinc-100 pt-12">
+                    <h3 className="text-2xl font-bold mb-8 text-zinc-900">Understanding the Code</h3>
+                    <div className="grid md:grid-cols-2 gap-10 text-sm text-zinc-500">
+                        <div className="bg-zinc-50/50 p-6 rounded-2xl border border-zinc-100">
+                            <strong className="text-zinc-900 block mb-3 text-base">The `async` keyword</strong>
+                            <p className="font-medium leading-relaxed italic">Marks a function as asynchronous, meaning it returns a Promise. This allows us to use `await` inside it.</p>
                         </div>
-                        <div>
-                            <strong className="text-white block mb-2">The `await` keyword</strong>
-                            <p>Pauses the function execution until a Promise settles (resolves or rejects). This makes asynchronous code look and behave like synchronous code.</p>
+                        <div className="bg-zinc-50/50 p-6 rounded-2xl border border-zinc-100">
+                            <strong className="text-zinc-900 block mb-3 text-base">The `await` keyword</strong>
+                            <p className="font-medium leading-relaxed italic">Pauses the function execution until a Promise settles (resolves or rejects). This makes asynchronous code look and behave like synchronous code.</p>
                         </div>
-                        <div>
-                            <strong className="text-white block mb-2">Error Handling</strong>
-                            <p>We use `try/catch` blocks. If the API call fails (e.g., 400 Bad Request, 500 Server Error), we throw an error and catch it to update the UI state.</p>
+                        <div className="bg-zinc-50/50 p-6 rounded-2xl border border-zinc-100">
+                            <strong className="text-zinc-900 block mb-3 text-base">Error Handling</strong>
+                            <p className="font-medium leading-relaxed italic">We use `try/catch` blocks. If the API call fails (e.g., 400 Bad Request, 500 Server Error), we throw an error and catch it to update the UI state.</p>
                         </div>
-                        <div>
-                            <strong className="text-white block mb-2">State Management</strong>
-                            <p>We use React state (`idle`, `loading`, `success`, `error`) to drive the UI. This provides immediate visual feedback during the asynchronous operation.</p>
+                        <div className="bg-zinc-50/50 p-6 rounded-2xl border border-zinc-100">
+                            <strong className="text-zinc-900 block mb-3 text-base">State Management</strong>
+                            <p className="font-medium leading-relaxed italic">We use React state (`idle`, `loading`, `success`, `error`) to drive the UI. This provides immediate visual feedback during the asynchronous operation.</p>
                         </div>
                     </div>
                 </section>
@@ -227,9 +207,8 @@ export default function AsyncDemoPage() {
     );
 }
 
-// Helper Component for displaying API responses
 function ResponseDisplay({ status, data }: { status: string, data: any }) {
-    if (status === "idle") return <div className="h-24 flex items-center justify-center text-gray-600 text-sm border border-dashed border-gray-800 rounded-lg">No request made yet</div>;
+    if (status === "idle") return <div className="h-24 flex items-center justify-center text-zinc-400 text-xs font-bold font-mono border border-dashed border-zinc-200 rounded-xl bg-zinc-50/50 uppercase tracking-widest">No request made yet</div>;
 
     return (
         <AnimatePresence mode="wait">
@@ -237,7 +216,7 @@ function ResponseDisplay({ status, data }: { status: string, data: any }) {
                 <motion.div
                     key="loading"
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="h-24 flex items-center justify-center text-gray-400"
+                    className="h-24 flex items-center justify-center text-zinc-500 font-bold text-sm italic"
                 >
                     Waiting for response...
                 </motion.div>
@@ -247,13 +226,13 @@ function ResponseDisplay({ status, data }: { status: string, data: any }) {
                 <motion.div
                     key="success"
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                    className="rounded-lg bg-green-500/10 border border-green-500/20 p-4 relative overflow-hidden"
+                    className="rounded-xl bg-green-50 border border-green-200 p-4 relative overflow-hidden shadow-sm"
                 >
-                    <div className="absolute top-2 right-2 text-green-500">
+                    <div className="absolute top-2 right-2 text-green-600">
                         <CheckCircle2 className="w-5 h-5" />
                     </div>
-                    <p className="text-xs font-mono text-green-400 mb-1">STATUS: 200 OK</p>
-                    <pre className="text-xs text-gray-300 overflow-x-auto">
+                    <p className="text-[10px] font-bold text-green-700 mb-2 uppercase tracking-widest">STATUS: 200 OK</p>
+                    <pre className="text-xs text-zinc-600 overflow-x-auto font-mono bg-white/50 p-2 rounded-lg border border-green-100">
                         {JSON.stringify(data, null, 2)}
                     </pre>
                 </motion.div>
@@ -263,13 +242,13 @@ function ResponseDisplay({ status, data }: { status: string, data: any }) {
                 <motion.div
                     key="error"
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                    className="rounded-lg bg-red-500/10 border border-red-500/20 p-4 relative"
+                    className="rounded-xl bg-red-50 border border-red-200 p-4 relative shadow-sm"
                 >
-                    <div className="absolute top-2 right-2 text-red-500">
+                    <div className="absolute top-2 right-2 text-red-600">
                         <XCircle className="w-5 h-5" />
                     </div>
-                    <p className="text-xs font-mono text-red-400 mb-1">ERROR</p>
-                    <pre className="text-xs text-gray-300 overflow-x-auto">
+                    <p className="text-[10px] font-bold text-red-700 mb-2 uppercase tracking-widest">ERROR</p>
+                    <pre className="text-xs text-zinc-600 overflow-x-auto font-mono bg-white/50 p-2 rounded-lg border border-red-100">
                         {JSON.stringify(data || "Unknown Error", null, 2)}
                     </pre>
                 </motion.div>
